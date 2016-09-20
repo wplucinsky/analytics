@@ -410,6 +410,55 @@
 			fclose($output);
 	}
 
+	function algolia(){
+	/*
+		This function takes all the ad data from SQL and creates CSV like files that can be 
+		uploaded to Algolia and searched.
+	*/	
+		// declarations
+			$upload = array();
+			$servername = "craigslistadsavercom.ipowermysql.com";
+			$username = "cronjob";
+			$password = "r4aqq7tg#Craigslist";
+			$dbname1 = "link_storage";
+
+		// create and check connections
+			$conn1 = new mysqli($servername, $username, $password, $dbname1);
+			if ($conn1->connect_error) {
+				die("Connection failed: " . $conn1->connect_error);
+			}
+
+		// get information from `storage`
+			$sql = "SELECT url, title, imgname, fullname, price, adtype FROM storage";
+			$result = $conn1->query($sql);
+			if ($result) {
+				array_push($upload, '"url", "title", "nickname", "price", "adtype", "views"');
+				while ($row = $result->fetch_assoc()) {
+					// picking either `imgname` or `fullname`
+					if (strlen($row['fullname']) > 1) { $nickname = $row['fullname']; } else { $nickname = $row['imgname'];}
+
+					// get current view count
+					$sql2 = 'SELECT views FROM view WHERE title = "'. $row['title'] . '"';
+					$result2 = $conn1->query($sql2);
+					if ($result2) {
+						$row2 = $result->fetch_array(MYSQLI_ASSOC);
+						$views = $row['views'];
+					}
+
+					$addTo = '"'.$row['url'].'", "'.$row['title'].'", "'.$row['title'].'", "'.$row['price'].'", "'.$row['adtype'].'", "'.$views.'"';
+					array_push($upload, $addTo);
+				}
+			}
+
+		// put information into a txt file
+			$output = fopen('../../stats/analytics/algoliaUpload.txt', 'w');
+			foreach ($upload as $key => $value) {
+				fwrite($output, $value."\n");
+			}
+			fclose($output);
+
+	}
+
 	// Files Created
 		// ipMaster.txt
 		// toolReferers.txt
@@ -417,6 +466,7 @@
 		// scrollPercentages.txt
 		// dailyVisitors.txt
 		// userDevices.txt
+		// algoliaUpload.txt
 
 	extractGZ(); 			// extract all .gz data to .txt file
 	ipGrabber(); 			// extract all the ips to a .txt file
@@ -424,7 +474,7 @@
 	scrollPercentages(); 	// gets the 15 most recent ads scroll percentages (ignores 0%)
 	dailyVisitors();		// gets the 30, 15, 10 and 1 day(s) num of visitors
 	device();				// gets the mobile vs. desktop device spread
-
+	algolia();				// gets all the saved ads to be searched in Algolia
 
 
 ?>
