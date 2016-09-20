@@ -429,10 +429,13 @@
 			}
 
 		// get information from `storage`
-			$sql = "SELECT url, title, imgname, fullname, price, adtype FROM storage";
+			$sql = "SELECT DISTINCT title, url, imgname, fullname, price, adtype FROM storage";
 			$result = $conn1->query($sql);
+
 			if ($result) {
-				array_push($upload, '"url", "title", "nickname", "price", "adtype", "views"');
+				$title = '"url", "title", "nickname", "price", "adtype", "views"';
+				array_push($upload, $title);
+				echo $title . "<br>";
 				while ($row = $result->fetch_assoc()) {
 					// picking either `imgname` or `fullname`
 					if (strlen($row['fullname']) > 1) { $nickname = $row['fullname']; } else { $nickname = $row['imgname'];}
@@ -441,11 +444,12 @@
 					$sql2 = 'SELECT views FROM view WHERE title = "'. $row['title'] . '"';
 					$result2 = $conn1->query($sql2);
 					if ($result2) {
-						$row2 = $result->fetch_array(MYSQLI_ASSOC);
-						$views = $row['views'];
+						$row2 = $result2->fetch_array(MYSQLI_ASSOC);
+						$views = $row2['views'];
 					}
 
-					$addTo = '"'.$row['url'].'", "'.$row['title'].'", "'.$row['title'].'", "'.$row['price'].'", "'.$row['adtype'].'", "'.$views.'"';
+					$addTo = ''.$row['url'].', '.str_replace(',', '\,', trim($row['title'])).', '.$nickname.', '.$row['price'].', '.$row['adtype'].', '.$views;
+					echo $addTo . "<br>";
 					array_push($upload, $addTo);
 				}
 			}
