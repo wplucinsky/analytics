@@ -76,7 +76,19 @@
 		day are exported. All IPs are added to a master IP file if they aren't already in
 		it. 
 	*/
-		global $diplaySuccess;
+		// declarations	
+			global $diplaySuccess;
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname = "";
+
+		// create and check connections
+			$conn = new mysqli($servername, $username, $password, $dbname);
+			if ($conn->connect_error) {
+				die("Connection failed: " . $conn1->connect_error);
+			}
+
 		// read and write all unique IPs to a .txt file
 			$files = scandir('../../stats');
 			foreach ($files as $key => $file) {
@@ -107,9 +119,32 @@
 				}
 			}
 
+		// get all IPs from the users table
+			$ipArray = array();
+			$inputFile = '../../stats/analytics/id.txt';
+			$input = fopen($inputFile, 'r');
+			$idVal = fgets($input);
+			fclose($input);
+			$sql = "SELECT `id`, `ip` FROM `users` WHERE `id` >= " . $idVal;
+			$result = $conn->query($sql);
+			if ($result) {
+				while ($row = $result->fetch_assoc()) {
+					foreach (explode(',', $row['ip']) as $key => $value) {
+						if(!in_array(str_replace(' ', '', $value), $ipArray)) {
+							array_push($ipArray, str_replace(' ', '', $value));
+						}
+					}
+					$idVal = $row['id'];
+				}
+
+			}
+			$conn->close();
+			$output = fopen($inputFile, 'w');
+			fwrite($output, $idVal);
+			fclose($output);
+
 		// redo today's
 			$today = 'access_log_' . date('Ymd') . '.txt';
-			$ipArray = array();
 			$inputFile = '../../stats/'.$today;
 			$outputFile = '../../stats/'.str_replace('.txt', '_ip.txt', $today);
 			$input = fopen($inputFile, 'r');
