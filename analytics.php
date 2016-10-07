@@ -3,6 +3,7 @@
 		echo "<pre>";
 		error_reporting(~0);
 		ini_set('display_errors', 1);
+		$diplaySuccess = TRUE;
 
 	function dataRange($last){
 	/* 
@@ -31,6 +32,7 @@
 		doesn't already exist. It will always recreate the current day's
 		.txt file. 
 	*/
+		global $diplaySuccess;
 		// save all .gz files as .txt files in the stats directory
 			$files = scandir('../../stats');
 			foreach ($files as $key => $file) {
@@ -61,6 +63,9 @@
 			stream_copy_to_stream($gz, $output);
 			gzclose($gz);
 			fclose($output);
+
+		// success prompt
+			if ($diplaySuccess) {echo 'extractGZ Success' . '<br>';}
 	}
 
 	function ipGrabber(){
@@ -71,6 +76,19 @@
 		day are exported. All IPs are added to a master IP file if they aren't already in
 		it. 
 	*/
+		// declarations	
+			global $diplaySuccess;
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname = "";
+
+		// create and check connections
+			$conn = new mysqli($servername, $username, $password, $dbname);
+			if ($conn->connect_error) {
+				die("Connection failed: " . $conn1->connect_error);
+			}
+
 		// read and write all unique IPs to a .txt file
 			$files = scandir('../../stats');
 			foreach ($files as $key => $file) {
@@ -101,9 +119,32 @@
 				}
 			}
 
+		// get all IPs from the users table
+			$ipArray = array();
+			$inputFile = '../../stats/analytics/id.txt';
+			$input = fopen($inputFile, 'r');
+			$idVal = fgets($input);
+			fclose($input);
+			$sql = "SELECT `id`, `ip` FROM `users` WHERE `id` >= " . $idVal;
+			$result = $conn->query($sql);
+			if ($result) {
+				while ($row = $result->fetch_assoc()) {
+					foreach (explode(',', $row['ip']) as $key => $value) {
+						if(!in_array(str_replace(' ', '', $value), $ipArray)) {
+							array_push($ipArray, str_replace(' ', '', $value));
+						}
+					}
+					$idVal = $row['id'];
+				}
+
+			}
+			$conn->close();
+			$output = fopen($inputFile, 'w');
+			fwrite($output, $idVal);
+			fclose($output);
+
 		// redo today's
 			$today = 'access_log_' . date('Ymd') . '.txt';
-			$ipArray = array();
 			$inputFile = '../../stats/'.$today;
 			$outputFile = '../../stats/'.str_replace('.txt', '_ip.txt', $today);
 			$input = fopen($inputFile, 'r');
@@ -142,6 +183,9 @@
 				fwrite($output, $value."\n");
 			}
 			fclose($output);
+
+		// success prompt
+			if ($diplaySuccess) {echo 'ipGrabber Success' . '<br>';}
 	}
 
 	function homepageConversion(){
@@ -151,13 +195,14 @@
 		see about.php. It also saves the 5 most popular referers. Webadmin and bot clicks 
 		are ignored. Two .txt files are created.
 	*/
+		global $diplaySuccess;
 		// declarations
 			$visitors = array("tool"=>0,"about"=>0,"image"=>0);
 			$referers = array();
-			$servername = "craigslistadsavercom.ipowermysql.com";
-			$username = "cronjob";
-			$password = "r4aqq7tg#Craigslist";
-			$dbname1 = "link_storage";
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname1 = "";
 
 		// create and check connections
 			$conn1 = new mysqli($servername, $username, $password, $dbname1);
@@ -213,6 +258,9 @@
 			}
 			fclose($output);
 
+		// success prompt
+			if ($diplaySuccess) {echo 'homepageConversion Success' . '<br>';}
+
 	}
 
 	function scrollPercentages(){
@@ -220,15 +268,16 @@
 		This functions gets the 15 most recently saved ads and gets records the scroll
 		percentages into a .txt file.
 	*/
+		global $diplaySuccess;
 		// declarations
 			$percentages = array("0%"=>0,"10%"=>0,"20%"=>0,"30%"=>0,"40%"=>0,"50%"=>0,"60%"=>0,"70%"=>0,"80%"=>0,"90%"=>0,"100%"=>0);
 			$names = array();
 			$titles = array();
-			$servername = "craigslistadsavercom.ipowermysql.com";
-			$username = "cronjob";
-			$password = "r4aqq7tg#Craigslist";
-			$dbname1 = "link_storage";
-			$dbname2 = "view_storage";
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname1 = "";
+			$dbname2 = "";
 
 		// create and check connections
 			$conn1 = new mysqli($servername, $username, $password, $dbname1);
@@ -271,6 +320,9 @@
 				fwrite($output, $key.':'.$value."\n");
 			}
 			fclose($output);
+
+		// success prompt
+			if ($diplaySuccess) {echo 'scrollPercentages Success' . '<br>';}
 	}
 
 	function dailyVisitors(){
@@ -279,14 +331,15 @@
 		for the last 30 days, 10 days, 5 days, and 1 day. It puts all these results into a
 		.txt file.
 	*/
+		global $diplaySuccess;
 		// declarations
 			$visitors = array("30"=>0,"10"=>0,"5"=>0,"1"=>0);
 			$names = array();
-			$servername = "craigslistadsavercom.ipowermysql.com";
-			$username = "cronjob";
-			$password = "r4aqq7tg#Craigslist";
-			$dbname1 = "link_storage";
-			$dbname2 = "view_storage";
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname1 = "";
+			$dbname2 = "";
 
 		// create and check connections
 			$conn1 = new mysqli($servername, $username, $password, $dbname1);
@@ -348,6 +401,9 @@
 				fwrite($output, $key.':'.$value."\n");
 			}
 			fclose($output);
+
+		// success prompt
+			if ($diplaySuccess) {echo 'dailyVisitors Success' . '<br>';}
 	}
 
 	function device(){
@@ -356,14 +412,15 @@
 		accessing the ad. It creates a .txt file of the counts of mobile vs. desktop
 		users.
 	*/
+		global $diplaySuccess;
 		// declarations
 			$device = array("mobile"=>0,"desktop"=>0);
 			$names = array();
-			$servername = "craigslistadsavercom.ipowermysql.com";
-			$username = "cronjob";
-			$password = "r4aqq7tg#Craigslist";
-			$dbname1 = "link_storage";
-			$dbname2 = "view_storage";
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname1 = "";
+			$dbname2 = "";
 
 		// create and check connections
 			$conn1 = new mysqli($servername, $username, $password, $dbname1);
@@ -408,59 +465,122 @@
 				fwrite($output, $key.':'.$value."\n");
 			}
 			fclose($output);
+
+		// success prompt
+			if ($diplaySuccess) {echo 'device Success' . '<br>'; }
 	}
 
 	function algolia(){
 	/*
-		This function takes all the ad data from SQL and creates CSV like files that can be 
-		uploaded to Algolia and searched.
+		This function takes all the relevent ad data from SQL and uploads it all in JSON
+		format to Algolia to be searched later. Duplicates are automatically updated with 
+		the data that changed.
 	*/	
+		global $diplaySuccess;
 		// declarations
-			$upload = array();
-			$servername = "craigslistadsavercom.ipowermysql.com";
-			$username = "cronjob";
-			$password = "r4aqq7tg#Craigslist";
-			$dbname1 = "link_storage";
+			$batch = array();
+			$views = array();
+			$viewsOrig = array();
+			$i = 0;
+			$servername = "";
+			$username = "";
+			$password = "";
+			$dbname1 = "";
 
 		// create and check connections
-			$conn1 = new mysqli($servername, $username, $password, $dbname1);
-			if ($conn1->connect_error) {
-				die("Connection failed: " . $conn1->connect_error);
-			}
+			// SQL
+				$conn1 = new mysqli($servername, $username, $password, $dbname1);
+				if ($conn1->connect_error) {
+					die("Connection failed: " . $conn1->connect_error);
+				}
+			// Algolia
+				require_once('Algolia/algoliaSetup.php');
+				$client = new \AlgoliaSearch\Client("", "");
+				$index = $client->initIndex('storageTable');
 
 		// get information from `storage`
-			$sql = "SELECT DISTINCT title, url, imgname, fullname, price, adtype FROM storage";
+			$sql = "SELECT DISTINCT id, title, url, imgname, fullname, price, adtype FROM storage ORDER BY id ASC";
 			$result = $conn1->query($sql);
 
-			if ($result) {
-				$title = '"url", "title", "nickname", "price", "adtype", "views"';
-				array_push($upload, $title);
-				echo $title . "<br>";
-				while ($row = $result->fetch_assoc()) {
-					// picking either `imgname` or `fullname`
-					if (strlen($row['fullname']) > 1) { $nickname = $row['fullname']; } else { $nickname = $row['imgname'];}
-
-					// get current view count
-					$sql2 = 'SELECT views FROM view WHERE title = "'. $row['title'] . '"';
-					$result2 = $conn1->query($sql2);
-					if ($result2) {
-						$row2 = $result2->fetch_array(MYSQLI_ASSOC);
-						$views = $row2['views'];
-					}
-
-					$addTo = ''.$row['url'].', '.str_replace(',', '\,', trim($row['title'])).', '.$nickname.', '.$row['price'].', '.$row['adtype'].', '.$views;
-					echo $addTo . "<br>";
-					array_push($upload, $addTo);
+			$sql = "SELECT * FROM view";
+			$result2 = $conn1->query($sql);
+			if ($result2){
+				while ($row2 = $result2->fetch_assoc()) {
+					$key = $row2['fullname'].':'.addslashes($row2['title']);
+					$views[$key] = $row2['views'];
 				}
 			}
 
-		// put information into a txt file
-			$output = fopen('../../stats/analytics/algoliaUpload.txt', 'w');
-			foreach ($upload as $key => $value) {
-				fwrite($output, $value."\n");
+			$sql = "SELECT DISTINCT id, title, url, imgname, fullname, nickname, price, adtype, views FROM analytics ORDER BY id ASC";
+			$result3 = $conn1->query($sql);
+			if ($result3){
+				while ($row3 = $result3->fetch_assoc()) {
+					$key = $row3['nickname'].':'.addslashes($row3['title']);
+					$viewsOrig[$key] = $row3['views'];
+				}
 			}
-			fclose($output);
 
+			if ($result) {
+				while ($row = $result->fetch_assoc()) {
+					$record = array();
+					// upload 500 records to Algolia
+						if (sizeof($batch) > 500) {
+							$index->saveObjects($batch);
+							$batch = array();
+						}
+					
+					// id
+						$record['objectID'] = $row['id'];
+
+					// title
+						$record['title'] = $row['title'];
+
+					// url
+						$record['url'] = $row['url'];
+
+					// nickname
+						$record['nickname'] = (strlen($row['fullname']) > 1) ? $row['fullname'] : $row['imgname'];
+
+					// CraigslistAdSaver url
+						$record['myUrl'] = 'http://www.craigslistadsaver.com/view.php?name=' . $record['nickname'];
+
+					// price
+						$record['price'] = $row['price'];
+
+					// adtype
+						$record['adtype'] = $row['adtype'];
+
+					// views
+						$key = $record['nickname'].':'.addslashes($row['title']);
+						$record['views'] = (array_key_exists($key, $views)) ? intval($views[$key]) : 0;
+
+					// upload to batch if views changed or file hasn't been uploaded already
+						if ( ($record['views'] != @$viewsOrig[$key]) or !array_key_exists($key, $viewsOrig) ) {
+							array_push($batch, $record);
+							$sql = "SELECT * FROM analytics WHERE (`title`= '{$record['title']}' AND `nickname`= '{$record['nickname']}')";
+							$result2 = $conn1->query($sql);
+							if( mysqli_num_rows($result2) < 1) {
+								$sql = "INSERT INTO analytics (title, url, imgname, fullname, nickname, price, adtype, views) VALUES ('{$record['title']}', '{$record['url']}', '{$row['imgname']}', '{$row['fullname']}', '{$record['nickname']}', '{$record['price']}', '{$record['adtype']}', '{$record['views']}')";
+								$result2 = $conn1->query($sql);
+							} else {
+								$sql = "UPDATE analytics SET `views` = '{$record['views']}' WHERE (`title`= '{$record['title']}' AND `nickname`= '{$record['nickname']}')";
+								$result2 = $conn1->query($sql);
+							}
+							$i++;
+						}
+						
+				}
+			}
+
+		$conn1->close();
+
+		// upload to Algolia
+			if (sizeof($batch) >= 1) {
+				$index->saveObjects($batch);
+			}
+
+		// success prompt
+			if ($diplaySuccess) {echo 'algoliaUpload Success: ' . $i . '<br>';}
 	}
 
 	// Files Created
@@ -470,7 +590,6 @@
 		// scrollPercentages.txt
 		// dailyVisitors.txt
 		// userDevices.txt
-		// algoliaUpload.txt
 
 	extractGZ(); 			// extract all .gz data to .txt file
 	ipGrabber(); 			// extract all the ips to a .txt file
@@ -478,7 +597,7 @@
 	scrollPercentages(); 	// gets the 15 most recent ads scroll percentages (ignores 0%)
 	dailyVisitors();		// gets the 30, 15, 10 and 1 day(s) num of visitors
 	device();				// gets the mobile vs. desktop device spread
-	algolia();				// gets all the saved ads to be searched in Algolia
+	algolia();				// uploads all the ad data to Algolia to be searched
 
 
 ?>
