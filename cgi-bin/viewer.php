@@ -37,7 +37,6 @@
 					- a new view
 					- a new ad
 			*/
-
 				// get all ads with the above criteria
 					$sql = "SELECT * FROM `analytics` WHERE ((`views` = '1' AND `dateAdded` > '{$this->week->format('Y-m-d H:i:s')}') OR (`dateAdded` >= '{$this->midnight->format('Y-m-d H:i:s')}') OR (`dateUpdated` >= '{$this->midnight->format('Y-m-d H:i:s')}'))";
 					$result = $this->conn->query($sql);
@@ -261,8 +260,11 @@
 			<div class="tableDiv">
 				<h1 class="leftAlign">SQL 'view' Table</h1>
 				<?php
+					$totalSum = 0; $daySum = 0;
 					echo "<table class='leftAlign'><tr><th>id</th><th>fullname</th><th>title</th><th>views</th><th>change</th><th>date added</th><th>date updated</th>";
 					foreach ($ads as $key => $value) {
+						$totalSum += intval($value['views']);
+						$daySum += intval($value['change']);
 						if ($value['fullname'] == 'Already Saved ERROR') {
 							echo "<tr><td>" . $value['id'] . "</td><td>" . $value['fullname'] . " </td><td> " . $value['title'] . " </td><td class='number'> " . $value['views'] . " </td>";
 						} else {
@@ -280,6 +282,7 @@
 						}
 						echo "<td class='number'> " . current(explode(' ', $value['dateAdded'])) . " </td><td class='number'> " . current(explode(' ', $value['dateUpdated'])) . " </td></tr>";
 					}
+					echo '<tr style="height:20px;"></tr><tr><td></td><td>Total Ads: '.sizeof($ads).'</td><td class="number">'.date('l F jS, Y h:i:s A').'</td><td class="number">'.$totalSum.'</td><td class="number">'.$daySum.'</td><td class="number"></td><td class="number"></td></tr>';
 					echo "</table>";
 				?>
 			</div>
