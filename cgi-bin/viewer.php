@@ -1,12 +1,13 @@
 	<?php
-
+		
 		require_once('analytics.php');
+		require_once('sitemap.php');
 
 		class Viewer {
-			private $servername = "**";
-			private $username = "**";
-			private $password = "**";
-			private $dbname = "**";
+			private $servername = getenv("SERVERNAME");
+			private $username = getenv("USERNAME");
+			private $password = getenv("PASSWORD");
+			private $dbname = getenv("DBNAME_L");
 			private $ads = array();
 			private $conversion = array();
 			private $scroll = array();
@@ -17,6 +18,7 @@
 
 			function __construct(){
 				$analytics = new Analytics;
+				$sitemap = new Sitemap;
 
 				$this->today = new DateTime();
 				$this->midnight = new DateTime("today midnight");
