@@ -17,8 +17,8 @@
 			public $weeks;
 
 			function __construct(){
-				$analytics = new Analytics;
-				$sitemap = new Sitemap;
+				$analytics = new Analytics();
+				$sitemap = new Sitemap();
 
 				$this->today = new DateTime();
 				$this->midnight = new DateTime("today midnight");

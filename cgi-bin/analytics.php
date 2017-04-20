@@ -1,5 +1,5 @@
 <?php
-
+	
 	class Analytics {
 		// Files Created
 			// ipMaster.txt
