@@ -1,5 +1,5 @@
 <?php
-
+	
 	class Analytics {
 		// Files Created
 			// ipMaster.txt
@@ -11,9 +11,9 @@
 
 		public $displaySuccess = FALSE;
 		public $date;
-		private $servername = "**";
-		private $username = "**";
-		private $password = "**";
+		private $servername = getenv("SERVERNAME");
+		private $username = getenv("USERNAME");
+		private $password = getenv("PASSWORD");
 
 
 		function __construct(){
